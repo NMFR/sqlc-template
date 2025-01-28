@@ -1,0 +1,11 @@
+version: "3"
+name: sqlc-template
+services:
+  dev-container:
+    container_name: dev-container
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+      target: dev-container
+    volumes:
+      - .:/opt/app

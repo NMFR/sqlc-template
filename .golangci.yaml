@@ -1,0 +1,4 @@
+# golangci-lint linter configuration.
+# See https://golangci-lint.run/usage/configuration/ for more information.
+run:
+  tests: false

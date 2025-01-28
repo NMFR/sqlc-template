@@ -1,0 +1,3 @@
+# sqlc-template
+
+TODO: this

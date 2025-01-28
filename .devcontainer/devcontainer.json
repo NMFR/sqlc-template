@@ -1,0 +1,28 @@
+{
+  "name": "sqlc-template",
+  "dockerComposeFile": ["../docker-compose.yaml"],
+  "service": "dev-container",
+  "workspaceFolder": "/opt/app",
+  "mounts": [
+    // mount the host ssh folder to allow git push and pull from within the dev container.
+    "type=bind,source=${localEnv:HOME}/.ssh,target=/home/dev/.ssh,readonly"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "editorconfig.editorconfig",
+        "waderyan.gitblame",
+        "donjayamanne.githistory",
+        "eamodio.gitlens",
+        "ms-azuretools.vscode-docker",
+        "redhat.vscode-yaml",
+        "esbenp.prettier-vscode",
+        "golang.go",
+        "bierner.markdown-mermaid",
+        "zxh404.vscode-proto3",
+        "42crunch.vscode-openapi"
+      ],
+      "settings": {}
+    }
+  }
+}
