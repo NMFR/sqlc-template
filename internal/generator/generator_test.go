@@ -57,17 +57,17 @@ func runGenerateFromReader(request *plugin.GenerateRequest) (*plugin.GenerateRes
 
 func TestGeneratorSuccess(t *testing.T) {
 	testCases := map[string]struct {
-		request  plugin.GenerateRequest
-		expected plugin.GenerateResponse
+		request  *plugin.GenerateRequest
+		expected *plugin.GenerateResponse
 	}{
 		"empty": {
-			request: plugin.GenerateRequest{
+			request: &plugin.GenerateRequest{
 				PluginOptions: []byte(`{
 					"filename": "test.file",
 					"template": ""
 				}`),
 			},
-			expected: plugin.GenerateResponse{
+			expected: &plugin.GenerateResponse{
 				Files: []*plugin.File{
 					{
 						Name:     "test.file",
@@ -77,7 +77,7 @@ func TestGeneratorSuccess(t *testing.T) {
 			},
 		},
 		"test-buildin-funcs": {
-			request: plugin.GenerateRequest{
+			request: &plugin.GenerateRequest{
 				PluginOptions: []byte(`{
 					"filename": "test.file",
 					"template": "` + jsonString(`
@@ -93,7 +93,7 @@ func TestGeneratorSuccess(t *testing.T) {
 `) + `"
 				}`),
 			},
-			expected: plugin.GenerateResponse{
+			expected: &plugin.GenerateResponse{
 				Files: []*plugin.File{
 					{
 						Name: "test.file",
@@ -113,7 +113,7 @@ func TestGeneratorSuccess(t *testing.T) {
 			},
 		},
 		"simple-template": {
-			request: plugin.GenerateRequest{
+			request: &plugin.GenerateRequest{
 				Queries: []*plugin.Query{
 					{
 						Name: "mock query",
@@ -165,7 +165,7 @@ func TestGeneratorSuccess(t *testing.T) {
 `) + `"
 				}`),
 			},
-			expected: plugin.GenerateResponse{
+			expected: &plugin.GenerateResponse{
 				Files: []*plugin.File{
 					{
 						Name: "some.file",
@@ -194,37 +194,37 @@ func TestGeneratorSuccess(t *testing.T) {
 		testCase := testCase
 
 		t.Run(testName, func(t *testing.T) {
-			response, err := runGenerateFromReader(&testCase.request)
+			response, err := runGenerateFromReader(testCase.request)
 
 			assert.NoError(t, err)
-			assert.EqualExportedValues(t, &testCase.expected, response)
+			assert.EqualExportedValues(t, testCase.expected, response)
 		})
 	}
 }
 
 func TestGeneratorFailure(t *testing.T) {
 	testCases := map[string]struct {
-		request        plugin.GenerateRequest
+		request        *plugin.GenerateRequest
 		expectedErrMsg string
 	}{
 		"empty options": {
-			request:        plugin.GenerateRequest{},
+			request:        &plugin.GenerateRequest{},
 			expectedErrMsg: "failed to parse the sqlc config 'sql[].codegen.options' field to JSON",
 		},
 		"invalid options JSON": {
-			request: plugin.GenerateRequest{
+			request: &plugin.GenerateRequest{
 				PluginOptions: []byte("not a JSON at all"),
 			},
 			expectedErrMsg: "failed to parse the sqlc config 'sql[].codegen.options' field to JSON",
 		},
 		"empty options JSON": {
-			request: plugin.GenerateRequest{
+			request: &plugin.GenerateRequest{
 				PluginOptions: []byte("{}"),
 			},
 			expectedErrMsg: "missing the sqlc config 'sql[].codegen.options.filename' field",
 		},
 		"missing template option": {
-			request: plugin.GenerateRequest{
+			request: &plugin.GenerateRequest{
 				PluginOptions: []byte(`{
 					"filename": "test.file"
 				}`),
@@ -232,7 +232,7 @@ func TestGeneratorFailure(t *testing.T) {
 			expectedErrMsg: "missing the sqlc 'sql[].codegen.options.template' field",
 		},
 		"missing filename option": {
-			request: plugin.GenerateRequest{
+			request: &plugin.GenerateRequest{
 				PluginOptions: []byte(`{
 					"template": "nothing"
 				}`),
@@ -240,7 +240,7 @@ func TestGeneratorFailure(t *testing.T) {
 			expectedErrMsg: "missing the sqlc config 'sql[].codegen.options.filename' field",
 		},
 		"invalid template option": {
-			request: plugin.GenerateRequest{
+			request: &plugin.GenerateRequest{
 				PluginOptions: []byte(`{
 					"filename": "test.file",
 					"template": "{{ invalid"
@@ -249,7 +249,7 @@ func TestGeneratorFailure(t *testing.T) {
 			expectedErrMsg: "failed to parse the template",
 		},
 		"template option using non existant data": {
-			request: plugin.GenerateRequest{
+			request: &plugin.GenerateRequest{
 				PluginOptions: []byte(`{
 					"filename": "test.file",
 					"template": "{{ .invalid }}"
@@ -263,7 +263,7 @@ func TestGeneratorFailure(t *testing.T) {
 		testCase := testCase
 
 		t.Run(testName, func(t *testing.T) {
-			response, err := runGenerateFromReader(&testCase.request)
+			response, err := runGenerateFromReader(testCase.request)
 
 			assert.Error(t, err)
 			assert.Nil(t, response)
