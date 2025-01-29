@@ -34,11 +34,9 @@ func Generate(request *plugin.GenerateRequest) (*plugin.GenerateResponse, error)
 	}
 
 	funcMap := template.FuncMap{
-		"Replace":    strings.Replace,
 		"ReplaceAll": strings.ReplaceAll,
 		"ToLower":    strings.ToLower,
 		"ToUpper":    strings.ToUpper,
-		"TrimSpace":  strings.TrimSpace,
 
 		"ToSnake":          strcase.ToSnake,          // ("foo bar") =>	"foo_bar"
 		"ToScreamingSnake": strcase.ToScreamingSnake, // ("foo bar") => "FOO_BAR"
@@ -46,7 +44,6 @@ func Generate(request *plugin.GenerateRequest) (*plugin.GenerateResponse, error)
 		"ToScreamingKebab": strcase.ToScreamingKebab, // ("foo bar") =>	"FOO-BAR"
 		"ToCamel":          strcase.ToCamel,          // ("foo bar") =>	"FooBar"
 		"ToLowerCamel":     strcase.ToLowerCamel,     // ("foo bar") =>	"fooBar"
-		"ToDelimited":      strcase.ToDelimited,      // ("foo bar", '.') => "FOO.BAR"
 	}
 
 	tmpl, err := template.New("template").Funcs(funcMap).Parse(*pluginOptions.Template)

@@ -8,7 +8,8 @@ CI_CONTAINER_IMAGE_NAME ?= nmfr/sqlc-template
 
 # By default -count=1 for no cache.
 # -p number of paralel processes allowed
-GO_TEST_FLAGS?=-count=1 -p=4
+#  -cover to include coverage %
+GO_TEST_FLAGS?=-count=1 -p=4 -cover
 
 # make help # Display available commands.
 # Only comments starting with "# make " will be printed.
