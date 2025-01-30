@@ -20,6 +20,8 @@ jobs:
         run: chmod -R o+rw .
       - name: build
         run: make container run="make build"
+      - name: DEBUG
+        run: ls -lHa bin/
       - name: rename build artifact
         run: mv bin/sqlc-template.wasm "bin/sqlc-template.${TAG#v}.wasm"
       - name: Create release
