@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+env:
+  DOCKER_BUILDKIT: 1
+  USE_CONTAINER_CACHE: true
+  CI_CONTAINER_REGISTRY: ghcr.io
+  CI_CONTAINER_IMAGE_NAME: ghcr.io/nmfr/sqlc-template/ci
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: docker login
+        continue-on-error: true
+        run: (echo ${{ secrets.GITHUB_TOKEN }} | docker login ${CI_CONTAINER_REGISTRY} -u ${GITHUB_ACTOR} --password-stdin)
+      # Needed so the container has permission to create files.
+      - name: container user repository file permissions
+        run: chmod -R o+rw .
+      - name: lint
+        run: make container run="make lint"
+      - name: tests
+        run: make container run="make test"
