@@ -245,6 +245,11 @@ func TestGeneratorFailure(t *testing.T) {
 			response:       &errorReaderWriter{},
 			expectedErrMsg: "failed to write to the stream",
 		},
+		"bad reader data": {
+			requestReader:  bytes.NewBuffer([]byte("not a binary protobuf message at all")),
+			response:       &bytes.Buffer{},
+			expectedErrMsg: "failed to parse / unmarshal the sqlc plugin GenerateRequest",
+		},
 		"empty options": {
 			requestReader:  requestToReaderNoErr(&plugin.GenerateRequest{}),
 			response:       &bytes.Buffer{},
