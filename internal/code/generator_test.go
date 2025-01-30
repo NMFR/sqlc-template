@@ -1,4 +1,4 @@
-package generator_test
+package code_test
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/NMFR/sqlc-template/internal/generator"
+	"github.com/NMFR/sqlc-template/internal/code"
 	"github.com/NMFR/sqlc-template/internal/protos/plugin"
 )
 
@@ -70,7 +70,7 @@ func (rw *errorReaderWriter) Write(p []byte) (n int, err error) {
 	return 0, fmt.Errorf("write error")
 }
 
-func TestGeneratorSuccess(t *testing.T) {
+func TestCodeGeneratorSuccess(t *testing.T) {
 	testCases := map[string]struct {
 		request  *plugin.GenerateRequest
 		expected *plugin.GenerateResponse
@@ -213,7 +213,7 @@ func TestGeneratorSuccess(t *testing.T) {
 			assert.NoError(t, err)
 
 			responseBuffer := &bytes.Buffer{}
-			err = generator.GenerateFromReader(requestReader, responseBuffer)
+			err = code.GenerateFromReader(requestReader, responseBuffer)
 			assert.NoError(t, err)
 
 			response, err := responseFromReader(responseBuffer)
@@ -224,7 +224,7 @@ func TestGeneratorSuccess(t *testing.T) {
 	}
 }
 
-func TestGeneratorFailure(t *testing.T) {
+func TestCodeGeneratorFailure(t *testing.T) {
 	testCases := map[string]struct {
 		requestReader  io.Reader
 		response       io.Writer
@@ -313,7 +313,7 @@ func TestGeneratorFailure(t *testing.T) {
 		testCase := testCase
 
 		t.Run(testName, func(t *testing.T) {
-			err := generator.GenerateFromReader(testCase.requestReader, testCase.response)
+			err := code.GenerateFromReader(testCase.requestReader, testCase.response)
 
 			assert.Error(t, err)
 			assert.ErrorContains(t, err, testCase.expectedErrMsg)

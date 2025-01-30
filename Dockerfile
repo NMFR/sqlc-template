@@ -42,8 +42,6 @@ ARG DEV_USER_NAME=dev
 ARG DEV_GROUP_ID=${DEV_USER_ID}
 ARG DEV_GROUP_NAME=${DEV_USER_NAME}
 
-ENV TINYGOROOT="/usr/local/tinygo/"
-
 RUN \
   # Install tools.
   apt-get update && \
@@ -59,14 +57,6 @@ RUN \
   apt-get clean && \
   apt-get autoremove && \
   rm -rf /var/lib/apt/lists/* && \
-  # Install tinygo, go compiler capable of building smaller binaries.
-  mkdir -p /tmp/tinygo && \
-  curl -sL https://github.com/tinygo-org/tinygo/releases/download/v0.35.0/tinygo0.35.0.linux-amd64.tar.gz -o /tmp/tinygo/tinygo.tar.gz && \
-  tar xzf /tmp/tinygo/tinygo.tar.gz --directory /tmp/tinygo && \
-  mkdir -p /usr/local/tinygo && \
-  mv /tmp/tinygo/tinygo/* /usr/local/tinygo/ && \
-  ln -s /usr/local/tinygo/bin/tinygo /usr/local/bin/tinygo && \
-  rm -Rf /tmp/tinygo && \
   # Set zsh as the default shell for the root user.
   chsh -s $(which zsh) && \
   # Install Oh My Zsh (to improve the development shell experience) for the root user.

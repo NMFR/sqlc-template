@@ -1,4 +1,4 @@
-package generator
+package code
 
 import (
 	"bytes"
@@ -19,6 +19,21 @@ type pluginOptions struct {
 	Template *string `json:"template,omitempty"`
 }
 
+func getTemplateFunctions() template.FuncMap {
+	return template.FuncMap{
+		"ReplaceAll": strings.ReplaceAll,
+		"ToLower":    strings.ToLower,
+		"ToUpper":    strings.ToUpper,
+
+		"ToSnake":          strcase.ToSnake,          // ("foo bar") =>	"foo_bar"
+		"ToScreamingSnake": strcase.ToScreamingSnake, // ("foo bar") => "FOO_BAR"
+		"ToKebab":          strcase.ToKebab,          // ("foo bar") =>	"foo-bar"
+		"ToScreamingKebab": strcase.ToScreamingKebab, // ("foo bar") =>	"FOO-BAR"
+		"ToCamel":          strcase.ToCamel,          // ("foo bar") =>	"FooBar"
+		"ToLowerCamel":     strcase.ToLowerCamel,     // ("foo bar") =>	"fooBar"
+	}
+}
+
 func Generate(request *plugin.GenerateRequest) (*plugin.GenerateResponse, error) {
 	pluginOptions := &pluginOptions{}
 	if err := json.Unmarshal(request.GetPluginOptions(), pluginOptions); err != nil {
@@ -33,20 +48,10 @@ func Generate(request *plugin.GenerateRequest) (*plugin.GenerateResponse, error)
 		return nil, fmt.Errorf("missing the sqlc 'sql[].codegen.options.template' field")
 	}
 
-	funcMap := template.FuncMap{
-		"ReplaceAll": strings.ReplaceAll,
-		"ToLower":    strings.ToLower,
-		"ToUpper":    strings.ToUpper,
-
-		"ToSnake":          strcase.ToSnake,          // ("foo bar") =>	"foo_bar"
-		"ToScreamingSnake": strcase.ToScreamingSnake, // ("foo bar") => "FOO_BAR"
-		"ToKebab":          strcase.ToKebab,          // ("foo bar") =>	"foo-bar"
-		"ToScreamingKebab": strcase.ToScreamingKebab, // ("foo bar") =>	"FOO-BAR"
-		"ToCamel":          strcase.ToCamel,          // ("foo bar") =>	"FooBar"
-		"ToLowerCamel":     strcase.ToLowerCamel,     // ("foo bar") =>	"fooBar"
-	}
-
-	tmpl, err := template.New("template").Funcs(funcMap).Parse(*pluginOptions.Template)
+	tmpl, err := template.
+		New("template").
+		Funcs(getTemplateFunctions()).
+		Parse(*pluginOptions.Template)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse the template, %w", err)
 	}
@@ -72,7 +77,7 @@ func GenerateFromBytes(in []byte) ([]byte, error) {
 
 	response, err := Generate(request)
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate, %w", err)
+		return nil, err
 	}
 
 	out, err := proto.Marshal(response)
