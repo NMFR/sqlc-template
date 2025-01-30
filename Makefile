@@ -30,7 +30,7 @@ fmt:
 # make lint # Lint the code base searching for formatting or known bad patterns.
 .PHONY: lint
 lint:
-	@golangci-lint run
+	golangci-lint run
 
 # make test # Run tests.
 .PHONY: test
