@@ -2,6 +2,7 @@ package generator_test
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"strings"
 	"testing"
@@ -26,22 +27,26 @@ func jsonString(str string) string {
 	return str
 }
 
-// runGenerateFromReader run the `generator.GenerateFromReader` by marshaling the `plugin.GenerateRequest` input to bytes and unmarshaling the result back to a `plugin.GenerateResponse`.
-func runGenerateFromReader(request *plugin.GenerateRequest) (*plugin.GenerateResponse, error) {
+func requestToReader(request *plugin.GenerateRequest) (io.Reader, error) {
 	requestBytes, err := proto.Marshal(request)
 	if err != nil {
 		return nil, err
 	}
 
-	requestReader := bytes.NewBuffer(requestBytes)
-	responseWriter := bytes.Buffer{}
+	return bytes.NewBuffer(requestBytes), nil
+}
 
-	err = generator.GenerateFromReader(requestReader, &responseWriter)
+func requestToReaderNoErr(request *plugin.GenerateRequest) io.Reader {
+	response, err := requestToReader(request)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
-	responseBytes, err := io.ReadAll(&responseWriter)
+	return response
+}
+
+func responseFromReader(reader io.Reader) (*plugin.GenerateResponse, error) {
+	responseBytes, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err
 	}
@@ -53,6 +58,16 @@ func runGenerateFromReader(request *plugin.GenerateRequest) (*plugin.GenerateRes
 	}
 
 	return response, nil
+}
+
+type errorReaderWriter struct{}
+
+func (rw *errorReaderWriter) Read(p []byte) (n int, err error) {
+	return 0, fmt.Errorf("read error")
+}
+
+func (rw *errorReaderWriter) Write(p []byte) (n int, err error) {
+	return 0, fmt.Errorf("write error")
 }
 
 func TestGeneratorSuccess(t *testing.T) {
@@ -194,9 +209,16 @@ func TestGeneratorSuccess(t *testing.T) {
 		testCase := testCase
 
 		t.Run(testName, func(t *testing.T) {
-			response, err := runGenerateFromReader(testCase.request)
-
+			requestReader, err := requestToReader(testCase.request)
 			assert.NoError(t, err)
+
+			responseBuffer := &bytes.Buffer{}
+			err = generator.GenerateFromReader(requestReader, responseBuffer)
+			assert.NoError(t, err)
+
+			response, err := responseFromReader(responseBuffer)
+			assert.NoError(t, err)
+
 			assert.EqualExportedValues(t, testCase.expected, response)
 		})
 	}
@@ -204,57 +226,80 @@ func TestGeneratorSuccess(t *testing.T) {
 
 func TestGeneratorFailure(t *testing.T) {
 	testCases := map[string]struct {
-		request        *plugin.GenerateRequest
+		requestReader  io.Reader
+		response       io.Writer
 		expectedErrMsg string
 	}{
+		"bad reader": {
+			requestReader:  &errorReaderWriter{},
+			response:       &bytes.Buffer{},
+			expectedErrMsg: "failed to read from stream",
+		},
+		"bad writer": {
+			requestReader: requestToReaderNoErr(&plugin.GenerateRequest{
+				PluginOptions: []byte(`{
+					"filename": "test.file",
+					"template": ""
+				}`),
+			}),
+			response:       &errorReaderWriter{},
+			expectedErrMsg: "failed to write to the stream",
+		},
 		"empty options": {
-			request:        &plugin.GenerateRequest{},
+			requestReader:  requestToReaderNoErr(&plugin.GenerateRequest{}),
+			response:       &bytes.Buffer{},
 			expectedErrMsg: "failed to parse the sqlc config 'sql[].codegen.options' field to JSON",
 		},
 		"invalid options JSON": {
-			request: &plugin.GenerateRequest{
+			requestReader: requestToReaderNoErr(&plugin.GenerateRequest{
 				PluginOptions: []byte("not a JSON at all"),
-			},
+			}),
+			response:       &bytes.Buffer{},
 			expectedErrMsg: "failed to parse the sqlc config 'sql[].codegen.options' field to JSON",
 		},
 		"empty options JSON": {
-			request: &plugin.GenerateRequest{
+			requestReader: requestToReaderNoErr(&plugin.GenerateRequest{
 				PluginOptions: []byte("{}"),
-			},
+			}),
+			response:       &bytes.Buffer{},
 			expectedErrMsg: "missing the sqlc config 'sql[].codegen.options.filename' field",
 		},
 		"missing template option": {
-			request: &plugin.GenerateRequest{
+			requestReader: requestToReaderNoErr(&plugin.GenerateRequest{
 				PluginOptions: []byte(`{
 					"filename": "test.file"
 				}`),
-			},
+			}),
+			response:       &bytes.Buffer{},
 			expectedErrMsg: "missing the sqlc 'sql[].codegen.options.template' field",
 		},
 		"missing filename option": {
-			request: &plugin.GenerateRequest{
+			requestReader: requestToReaderNoErr(&plugin.GenerateRequest{
 				PluginOptions: []byte(`{
 					"template": "nothing"
 				}`),
-			},
+			}),
+			response:       &bytes.Buffer{},
 			expectedErrMsg: "missing the sqlc config 'sql[].codegen.options.filename' field",
 		},
 		"invalid template option": {
-			request: &plugin.GenerateRequest{
+			requestReader: requestToReaderNoErr(&plugin.GenerateRequest{
 				PluginOptions: []byte(`{
 					"filename": "test.file",
 					"template": "{{ invalid"
 				}`),
-			},
+			}),
+			response:       &bytes.Buffer{},
 			expectedErrMsg: "failed to parse the template",
 		},
 		"template option using non existant data": {
-			request: &plugin.GenerateRequest{
+			requestReader: requestToReaderNoErr(&plugin.GenerateRequest{
 				PluginOptions: []byte(`{
 					"filename": "test.file",
 					"template": "{{ .invalid }}"
 				}`),
-			},
+			}),
+			response:       &bytes.Buffer{},
 			expectedErrMsg: "failed to execute the template",
 		},
 	}
@@ -263,10 +308,9 @@ func TestGeneratorFailure(t *testing.T) {
 		testCase := testCase
 
 		t.Run(testName, func(t *testing.T) {
-			response, err := runGenerateFromReader(testCase.request)
+			err := generator.GenerateFromReader(testCase.requestReader, testCase.response)
 
 			assert.Error(t, err)
-			assert.Nil(t, response)
 			assert.ErrorContains(t, err, testCase.expectedErrMsg)
 		})
 	}
