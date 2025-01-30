@@ -36,7 +36,7 @@ RUN \
   # Install the Golang protobuf compiler plugin.
   go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.31.0 && \
   # Install the golangci-lint linter.
-  curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2 && \
+  curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.63.4 && \
   # Create the non root user and group.
   groupadd --gid ${GROUP_ID} ${GROUP_NAME} && \
   useradd --uid ${USER_ID} --gid ${GROUP_ID} --create-home ${USER_NAME} && \

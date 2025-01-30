@@ -30,7 +30,7 @@ fmt:
 # make lint # Lint the code base searching for formatting or known bad patterns.
 .PHONY: lint
 lint:
-	golangci-lint run
+	GOFLAGS=-buildvcs=false golangci-lint run
 
 # make test # Run tests.
 .PHONY: test
@@ -52,6 +52,7 @@ clean:
 build: clean generate-protobuf
 	mkdir -p bin
 	GOOS=wasip1 GOARCH=wasm go build -o bin/sqlc-template.wasm cmd/sqlc-template/main.go
+	sha256sum bin/sqlc-template.wasm > bin/sqlc-template.sha256
 
 # make container run="<command>" # Run a command from inside the container. Examples: `make container run="make spell-check"`.
 .PHONY: container
