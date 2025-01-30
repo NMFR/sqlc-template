@@ -26,9 +26,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "$TAG" \
+          gh release create "${TAG}" \
             --repo="$GITHUB_REPOSITORY" \
             --title="${GITHUB_REPOSITORY#*/} ${TAG#v}" \
             --generate-notes \
             --verify-tag \
+            --notes "sha256: `$(sha256sum bin/sqlc-template.wasm | cut -f 1 -d ' ')`\n\n``` yaml\nversion: '2'\nplugins:- name: sqlc-template\n  wasm:\n    url: https://github.com/${TAG}/sqlc-template.wasm\n    sha256: $(sha256sum bin/sqlc-template.wasm | cut -f 1 -d ' ')\n```" \
             "bin/sqlc-template.wasm"
