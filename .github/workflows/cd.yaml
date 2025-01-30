@@ -1,9 +1,14 @@
-name: CI
+name: CD
 
 on:
   pull_request:
     branches:
       - main
+
+# on:
+#   push:
+#     branches:
+#       - main
 
 env:
   DOCKER_BUILDKIT: 1
@@ -12,8 +17,25 @@ env:
   CI_CONTAINER_IMAGE_NAME: ghcr.io/nmfr/sqlc-template/ci
 
 jobs:
-  test:
+  cache-ci-container-image:
     runs-on: ubuntu-22.04
+    permissions:
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: docker login
+        continue-on-error: true
+        run: (echo ${{ secrets.GITHUB_TOKEN }} | docker login ${CI_CONTAINER_REGISTRY} -u ${GITHUB_ACTOR} --password-stdin)
+      - name: docker build
+        run: make container run="echo 'image built'"
+      - name: docker push
+        continue-on-error: true
+        run: docker push $CI_CONTAINER_IMAGE_NAME
+
+  deploy:
+    runs-on: ubuntu-22.04
+    concurrency: ci-${{ github.ref }}
+    needs: cache-ci-container-image
     steps:
       - uses: actions/checkout@v4
       - name: docker login
