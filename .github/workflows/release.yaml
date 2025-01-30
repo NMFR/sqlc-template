@@ -20,12 +20,9 @@ jobs:
         run: chmod -R o+rw .
       - name: build
         run: make container run="make build"
-      - name: allow everyone to read write the build artifact folder
-        run: chmod -R o+rw bin/
-      - name: DEBUG
-        run: ls -lHa bin/
       - name: rename build artifact
-        run: mv bin/sqlc-template.wasm "bin/sqlc-template.${TAG#v}.wasm"
+        # rename from within the container due to file permission issues from the host.
+        run: make container run="mv bin/sqlc-template.wasm bin/sqlc-template.${TAG#v}.wasm"
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
