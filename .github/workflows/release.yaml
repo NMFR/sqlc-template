@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  cache-ci-container-image:
+    runs-on: ubuntu-22.04
+    env:
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: docker login
+        continue-on-error: true
+        run: (echo ${{ secrets.GITHUB_TOKEN }} | docker login ${CI_CONTAINER_REGISTRY} -u ${GITHUB_ACTOR} --password-stdin)
+      - name: build
+        run: make container run="make build"
+      - name: rename build artifact
+        run: mv bin/sqlc-template.wasm "bin/sqlc-template.${TAG#v}.wasm"
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$TAG" \
+            --repo="$GITHUB_REPOSITORY" \
+            --title="${GITHUB_REPOSITORY#*/} ${TAG#v}" \
+            --generate-notes \
+            --verify-tag \
+            "bin/sqlc-template.${TAG#v}.wasm"

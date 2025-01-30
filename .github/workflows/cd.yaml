@@ -1,14 +1,9 @@
 name: CD
 
 on:
-  pull_request:
+  push:
     branches:
       - main
-
-# on:
-#   push:
-#     branches:
-#       - main
 
 env:
   DOCKER_BUILDKIT: 1
