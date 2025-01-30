@@ -22,9 +22,6 @@ jobs:
         run: chmod -R o+rw .
       - name: build
         run: make container run="make build"
-      - name: rename build artifact
-        # rename from within the container due to file permission issues from the host.
-        run: make container run="mv bin/sqlc-template.wasm bin/sqlc-template.${TAG#v}.wasm"
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -34,4 +31,4 @@ jobs:
             --title="${GITHUB_REPOSITORY#*/} ${TAG#v}" \
             --generate-notes \
             --verify-tag \
-            "bin/sqlc-template.${TAG#v}.wasm"
+            "bin/sqlc-template.wasm"
