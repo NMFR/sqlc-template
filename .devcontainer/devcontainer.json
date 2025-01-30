@@ -10,17 +10,14 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "editorconfig.editorconfig",
-        "waderyan.gitblame",
-        "donjayamanne.githistory",
         "eamodio.gitlens",
+        "editorconfig.editorconfig",
         "ms-azuretools.vscode-docker",
         "redhat.vscode-yaml",
         "esbenp.prettier-vscode",
         "golang.go",
         "bierner.markdown-mermaid",
-        "zxh404.vscode-proto3",
-        "42crunch.vscode-openapi"
+        "zxh404.vscode-proto3"
       ],
       "settings": {}
     }
