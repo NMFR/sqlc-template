@@ -6,7 +6,7 @@ on:
       - "v*.*.*"
 
 jobs:
-  cache-ci-container-image:
+  create-release:
     runs-on: ubuntu-22.04
     env:
       TAG: ${{ github.ref_name }}
@@ -15,6 +15,9 @@ jobs:
       - name: docker login
         continue-on-error: true
         run: (echo ${{ secrets.GITHUB_TOKEN }} | docker login ${CI_CONTAINER_REGISTRY} -u ${GITHUB_ACTOR} --password-stdin)
+      # Needed so the container has permission to create files.
+      - name: container user repository file permissions
+        run: chmod -R o+rw .
       - name: build
         run: make container run="make build"
       - name: rename build artifact
