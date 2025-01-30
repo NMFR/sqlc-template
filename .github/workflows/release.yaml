@@ -5,6 +5,12 @@ on:
     tags:
       - "v*.*.*"
 
+env:
+  DOCKER_BUILDKIT: 1
+  USE_CONTAINER_CACHE: true
+  CI_CONTAINER_REGISTRY: ghcr.io
+  CI_CONTAINER_IMAGE_NAME: ghcr.io/nmfr/sqlc-template/ci
+
 jobs:
   create-release:
     runs-on: ubuntu-22.04
@@ -41,7 +47,7 @@ jobs:
             - name: sqlc-template
               wasm:
                 url: https://github.com/NMFR/sqlc-template/releases/download/'"${TAG}"'/sqlc-template.wasm
-                sha256: '$(sha256sum bin/sqlc-template.wasm | cut -f 1 -d ' ')''
+                sha256: '$(sha256sum bin/sqlc-template.wasm | cut -f 1 -d ' ')'
           ```
           ' \
             "bin/sqlc-template.wasm"
