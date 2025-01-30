@@ -20,6 +20,8 @@ jobs:
         run: chmod -R o+rw .
       - name: build
         run: make container run="make build"
+      - name: allow everyone to read write the build artifact folder
+        run: chmod -R o+rw bin/
       - name: DEBUG
         run: ls -lHa bin/
       - name: rename build artifact
