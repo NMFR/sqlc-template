@@ -47,6 +47,24 @@ func TestCodeGeneratorTemplateFuncs(t *testing.T) {
 			request:  createTemplateTestGenerateRequest(`{{ "FoO bAr" | ToUpper }}`),
 			expected: createTemplateTestGenerateResponse(`FOO BAR`),
 		},
+		"Contains": {
+			request: createTemplateTestGenerateRequest(`
+				{{ if Contains "foo bar foobar foo bar" "barfoo" }}yes{{ else }}no{{ end }}
+				{{ if Contains "foo bar foobar foo bar" "foobar" }}yes{{ else }}no{{ end }}
+			`),
+			expected: createTemplateTestGenerateResponse(`
+				no
+				yes
+			`),
+		},
+		"Trim": {
+			request:  createTemplateTestGenerateRequest(`{{ Trim "||foo || bar|||" "|" }}`),
+			expected: createTemplateTestGenerateResponse(`foo || bar`),
+		},
+		"TrimSpace": {
+			request:  createTemplateTestGenerateRequest(`{{ "     foo   bar   " | TrimSpace }}`),
+			expected: createTemplateTestGenerateResponse(`foo   bar`),
+		},
 		"ToSnake": {
 			request:  createTemplateTestGenerateRequest(`{{ "foo bar" | ToSnake }}`),
 			expected: createTemplateTestGenerateResponse(`foo_bar`),

@@ -9,10 +9,12 @@ import (
 
 func getTemplateFunctions() template.FuncMap {
 	return template.FuncMap{
-		"ReplaceAll": strings.ReplaceAll,
-		"ToLower":    strings.ToLower,
-		"ToUpper":    strings.ToUpper,
-
+		"ReplaceAll":       strings.ReplaceAll,
+		"ToLower":          strings.ToLower,
+		"ToUpper":          strings.ToUpper,
+		"Contains":         strings.Contains,
+		"Trim":             strings.Trim,
+		"TrimSpace":        strings.TrimSpace,
 		"ToSnake":          strcase.ToSnake,          // ("foo bar") =>	"foo_bar"
 		"ToScreamingSnake": strcase.ToScreamingSnake, // ("foo bar") => "FOO_BAR"
 		"ToKebab":          strcase.ToKebab,          // ("foo bar") =>	"foo-bar"
