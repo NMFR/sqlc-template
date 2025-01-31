@@ -34,7 +34,7 @@ jobs:
         run: |
           gh release create "${TAG}" \
             --repo="$GITHUB_REPOSITORY" \
-            --title="${GITHUB_REPOSITORY#*/} ${TAG#v}" \
+            --title="${TAG}" \
             --generate-notes \
             --verify-tag \
             --notes 'sha256: `'$(sha256sum bin/sqlc-template.wasm | cut -f 1 -d ' ')'`
