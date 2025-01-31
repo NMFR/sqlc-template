@@ -4,7 +4,6 @@ go 1.21.4
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
-	github.com/iancoleman/strcase v0.3.0
 	github.com/stretchr/testify v1.10.0
 	google.golang.org/protobuf v1.36.4
 )
