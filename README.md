@@ -21,7 +21,8 @@ version: "2"
 plugins:
     - name: sqlc-template
       wasm:
-          url: file:///opt/app/bin/sqlc-template.wasm
+          url: https://github.com/NMFR/sqlc-template/releases/download/v1.0.0/sqlc-template.wasm
+          sha256: 62b052a392a2ee631af1e54ae07e4653ba81ae296d2df62caf02c3bb4fa70be4
 sql:
     - engine: "postgresql"
       queries: "example/database/postgresql/query.sql"
@@ -35,17 +36,17 @@ sql:
                     queries:
                     {{- range .Queries }}
                     - name: {{ .Name | ToLowerCamel }}
-                        cmd: {{ .Cmd }}
-                        params: {{ if (eq (len .Params) 0) }}[]{{ end }}
-                        {{- range .Params }}
-                        - name: {{ .Column.Name | ToLowerCamel }}
-                            type: {{ .Column.Type.Name -}}
-                        {{ end }}
-                        columns: {{ if (eq (len .Columns) 0) }}[]{{ end }}
-                        {{- range .Columns }}
-                        - name: {{ .Name | ToLowerCamel }}
-                            type: {{ .Type.Name -}}
-                        {{ end }}
+                      cmd: {{ .Cmd }}
+                      params: {{ if (eq (len .Params) 0) }}[]{{ end }}
+                      {{- range .Params }}
+                      - name: {{ .Column.Name | ToLowerCamel }}
+                        type: {{ .Column.Type.Name -}}
+                      {{ end }}
+                      columns: {{ if (eq (len .Columns) 0) }}[]{{ end }}
+                      {{- range .Columns }}
+                      - name: {{ .Name | ToLowerCamel }}
+                        type: {{ .Type.Name -}}
+                      {{ end }}
                     {{ end -}}
 ```
 
