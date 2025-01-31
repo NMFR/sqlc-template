@@ -10,46 +10,66 @@ import (
 	"github.com/NMFR/sqlc-template/internal/protos/plugin"
 )
 
+func createTemplateTestGenerateRequest(content string) *plugin.GenerateRequest {
+	return &plugin.GenerateRequest{
+		PluginOptions: []byte(`{
+		"filename": "test.file",
+		"template": "` + jsonString(content) + `"
+	}`),
+	}
+}
+
+func createTemplateTestGenerateResponse(content string) *plugin.GenerateResponse {
+	return &plugin.GenerateResponse{
+		Files: []*plugin.File{
+			{
+				Name:     "test.file",
+				Contents: []byte(content),
+			},
+		},
+	}
+}
+
 func TestCodeGeneratorTemplateFuncs(t *testing.T) {
 	testCases := map[string]struct {
 		request  *plugin.GenerateRequest
 		expected *plugin.GenerateResponse
 	}{
-		"test-buildin-funcs": {
-			request: &plugin.GenerateRequest{
-				PluginOptions: []byte(`{
-					"filename": "test.file",
-					"template": "` + jsonString(`
-							{{ ReplaceAll "foo bar foo bar" "bar" "foo" }}
-							{{ "FoO bAr" | ToLower }}
-							{{ "FoO bAr" | ToUpper }}
-							{{ "foo bar" | ToSnake }}
-							{{ "foo bar" | ToScreamingSnake }}
-							{{ "foo bar" | ToKebab }}
-							{{ "foo bar" | ToScreamingKebab }}
-							{{ "foo bar" | ToCamel }}
-							{{ "foo bar" | ToLowerCamel }}
-`) + `"
-				}`),
-			},
-			expected: &plugin.GenerateResponse{
-				Files: []*plugin.File{
-					{
-						Name: "test.file",
-						Contents: []byte(`
-							foo foo foo foo
-							foo bar
-							FOO BAR
-							foo_bar
-							FOO_BAR
-							foo-bar
-							FOO-BAR
-							FooBar
-							fooBar
-`),
-					},
-				},
-			},
+		"ReplaceAll": {
+			request:  createTemplateTestGenerateRequest(`{{ ReplaceAll "foo bar foo bar" "bar" "foo" }}`),
+			expected: createTemplateTestGenerateResponse(`foo foo foo foo`),
+		},
+		"ToLower": {
+			request:  createTemplateTestGenerateRequest(`{{ "FoO bAr" | ToLower }}`),
+			expected: createTemplateTestGenerateResponse(`foo bar`),
+		},
+		"ToUpper": {
+			request:  createTemplateTestGenerateRequest(`{{ "FoO bAr" | ToUpper }}`),
+			expected: createTemplateTestGenerateResponse(`FOO BAR`),
+		},
+		"ToSnake": {
+			request:  createTemplateTestGenerateRequest(`{{ "foo bar" | ToSnake }}`),
+			expected: createTemplateTestGenerateResponse(`foo_bar`),
+		},
+		"ToScreamingSnake": {
+			request:  createTemplateTestGenerateRequest(`{{ "foo bar" | ToScreamingSnake }}`),
+			expected: createTemplateTestGenerateResponse(`FOO_BAR`),
+		},
+		"ToKebab": {
+			request:  createTemplateTestGenerateRequest(`{{ "foo bar" | ToKebab }}`),
+			expected: createTemplateTestGenerateResponse(`foo-bar`),
+		},
+		"ToScreamingKebab": {
+			request:  createTemplateTestGenerateRequest(`{{ "foo bar" | ToScreamingKebab }}`),
+			expected: createTemplateTestGenerateResponse(`FOO-BAR`),
+		},
+		"ToCamel": {
+			request:  createTemplateTestGenerateRequest(`{{ "foo bar" | ToCamel }}`),
+			expected: createTemplateTestGenerateResponse(`FooBar`),
+		},
+		"ToLowerCamel": {
+			request:  createTemplateTestGenerateRequest(`{{ "foo bar" | ToLowerCamel }}`),
+			expected: createTemplateTestGenerateResponse(`fooBar`),
 		},
 	}
 
