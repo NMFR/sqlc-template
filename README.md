@@ -140,7 +140,7 @@ The template uses the [Golang template](https://pkg.go.dev/text/template) "langu
 
 The data object available at the root of the template (`{{ . }}`) is the sqlc [`GenerateRequest`](internal/protos/plugin/codegen.pb.go#L967) object that provides access to the SQL schema, queries and some sqlc configuration fields.
 
-All of the [sprig](https://masterminds.github.io/sprig/) functions are available to be called from within the template with the excetion of:
+All of the [sprig](https://masterminds.github.io/sprig/) functions are available to be called from within the template with the exception of:
 
 -   osBase
 -   osDir
