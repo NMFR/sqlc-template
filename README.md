@@ -10,8 +10,6 @@ To use the plugin the following `options` must be defined in the [sqlc](https://
 -   `filename`: The generated code output file name.
 -   `template`: The [Golang template](https://pkg.go.dev/text/template).
 
-The template has access to the [sqlc](https://github.com/sqlc-dev/sqlc) [`GenerateRequest`](internal/protos/plugin/codegen.pb.go#L967) object as the root data object.
-
 Usage example:
 
 `sqlc.yaml`:
@@ -37,6 +35,7 @@ sql:
                     {{- range .Queries }}
                     - name: {{ .Name | ToLowerCamel }}
                       cmd: {{ .Cmd }}
+                      text: |{{ .Text | trim | nindent 4 }}
                       params: {{ if (eq (len .Params) 0) }}[]{{ end }}
                       {{- range .Params }}
                       - name: {{ .Column.Name | ToLowerCamel }}
@@ -58,6 +57,9 @@ Running the `sqlc generate` command will create the following file:
 queries:
     - name: getAuthor
       cmd: :one
+      text: |
+          SELECT id, name, bio FROM authors
+          WHERE id = $1 LIMIT 1
       params:
           - name: id
             type: bigserial
@@ -71,6 +73,9 @@ queries:
 
     - name: listAuthors
       cmd: :many
+      text: |
+          SELECT id, name, bio FROM authors
+          ORDER BY name
       params: []
       columns:
           - name: id
@@ -82,6 +87,13 @@ queries:
 
     - name: createAuthor
       cmd: :one
+      text: |
+          INSERT INTO authors (
+            name, bio
+          ) VALUES (
+            $1, $2
+          )
+          RETURNING id, name, bio
       params:
           - name: name
             type: text
@@ -97,6 +109,11 @@ queries:
 
     - name: updateAuthor
       cmd: :exec
+      text: |
+          UPDATE authors
+            set name = $2,
+            bio = $3
+          WHERE id = $1
       params:
           - name: id
             type: bigserial
@@ -108,8 +125,33 @@ queries:
 
     - name: deleteAuthor
       cmd: :exec
+      text: |
+          DELETE FROM authors
+          WHERE id = $1
       params:
           - name: id
             type: bigserial
       columns: []
 ```
+
+## Template
+
+The template uses the [Golang template](https://pkg.go.dev/text/template) "language".
+
+The data object available at the root of the template (`{{ . }}`) is the sqlc [`GenerateRequest`](internal/protos/plugin/codegen.pb.go#L967) object that provides access to the SQL schema, queries and some sqlc configuration fields.
+
+All of the [sprig](https://masterminds.github.io/sprig/) functions are available to be called from within the template with the excetion of:
+
+-   osBase
+-   osDir
+-   osClean
+-   osExt
+-   env
+-   expandenv
+-   kindOf
+-   kindIs
+-   typeOf
+-   typeIs
+-   typeIsLike
+-   deepEqual
+-   getHostByName
