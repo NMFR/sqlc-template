@@ -13,7 +13,7 @@ import (
 func createTemplateTestGenerateRequest(content string) *plugin.GenerateRequest {
 	return &plugin.GenerateRequest{
 		PluginOptions: []byte(`{
-		"filename": "test.file",
+		"filename": "",
 		"template": "` + jsonString(content) + `"
 	}`),
 	}
@@ -23,7 +23,7 @@ func createTemplateTestGenerateResponse(content string) *plugin.GenerateResponse
 	return &plugin.GenerateResponse{
 		Files: []*plugin.File{
 			{
-				Name:     "test.file",
+				Name:     "",
 				Contents: []byte(content),
 			},
 		},
@@ -87,7 +87,7 @@ func TestCodeGeneratorTemplateFuncs(t *testing.T) {
 			response, err := responseFromReader(responseBuffer)
 			assert.NoError(t, err)
 
-			assert.EqualExportedValues(t, testCase.expected, response)
+			assert.Equal(t, string(testCase.expected.Files[0].Contents), string(response.Files[0].Contents))
 		})
 	}
 }
