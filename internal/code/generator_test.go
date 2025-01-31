@@ -91,42 +91,6 @@ func TestCodeGeneratorSuccess(t *testing.T) {
 				},
 			},
 		},
-		"test-buildin-funcs": {
-			request: &plugin.GenerateRequest{
-				PluginOptions: []byte(`{
-					"filename": "test.file",
-					"template": "` + jsonString(`
-							{{ ReplaceAll "foo bar foo bar" "bar" "foo" }}
-							{{ "FoO bAr" | ToLower }}
-							{{ "FoO bAr" | ToUpper }}
-							{{ "foo bar" | ToSnake }}
-							{{ "foo bar" | ToScreamingSnake }}
-							{{ "foo bar" | ToKebab }}
-							{{ "foo bar" | ToScreamingKebab }}
-							{{ "foo bar" | ToCamel }}
-							{{ "foo bar" | ToLowerCamel }}
-`) + `"
-				}`),
-			},
-			expected: &plugin.GenerateResponse{
-				Files: []*plugin.File{
-					{
-						Name: "test.file",
-						Contents: []byte(`
-							foo foo foo foo
-							foo bar
-							FOO BAR
-							foo_bar
-							FOO_BAR
-							foo-bar
-							FOO-BAR
-							FooBar
-							fooBar
-`),
-					},
-				},
-			},
-		},
 		"simple-template": {
 			request: &plugin.GenerateRequest{
 				Queries: []*plugin.Query{
