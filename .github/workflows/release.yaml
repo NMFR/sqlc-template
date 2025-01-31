@@ -1,0 +1,53 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+env:
+  DOCKER_BUILDKIT: 1
+  USE_CONTAINER_CACHE: true
+  CI_CONTAINER_REGISTRY: ghcr.io
+  CI_CONTAINER_IMAGE_NAME: ghcr.io/nmfr/sqlc-template/ci
+
+jobs:
+  create-release:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: docker login
+        continue-on-error: true
+        run: (echo ${{ secrets.GITHUB_TOKEN }} | docker login ${CI_CONTAINER_REGISTRY} -u ${GITHUB_ACTOR} --password-stdin)
+      # Needed so the container has permission to create files.
+      - name: container user repository file permissions
+        run: chmod -R o+rw .
+      - name: build
+        run: make container run="make build"
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${TAG}" \
+            --repo="$GITHUB_REPOSITORY" \
+            --title="${TAG}" \
+            --generate-notes \
+            --verify-tag \
+            --notes 'sha256: `'$(sha256sum bin/sqlc-template.wasm | cut -f 1 -d ' ')'`
+
+          `sqlc.yaml` example:
+
+          ``` yaml
+          version: "2"
+          plugins:
+            - name: sqlc-template
+              wasm:
+                url: https://github.com/NMFR/sqlc-template/releases/download/'"${TAG}"'/sqlc-template.wasm
+                sha256: '$(sha256sum bin/sqlc-template.wasm | cut -f 1 -d ' ')'
+          ```
+          ' \
+            "bin/sqlc-template.wasm"

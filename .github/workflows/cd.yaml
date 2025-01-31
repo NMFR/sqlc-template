@@ -1,0 +1,47 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  DOCKER_BUILDKIT: 1
+  USE_CONTAINER_CACHE: true
+  CI_CONTAINER_REGISTRY: ghcr.io
+  CI_CONTAINER_IMAGE_NAME: ghcr.io/nmfr/sqlc-template/ci
+
+jobs:
+  cache-ci-container-image:
+    runs-on: ubuntu-22.04
+    permissions:
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: docker login
+        continue-on-error: true
+        run: (echo ${{ secrets.GITHUB_TOKEN }} | docker login ${CI_CONTAINER_REGISTRY} -u ${GITHUB_ACTOR} --password-stdin)
+      - name: docker build
+        run: make container run="echo 'image built'"
+      - name: docker push
+        continue-on-error: true
+        run: docker push $CI_CONTAINER_IMAGE_NAME
+
+  deploy:
+    runs-on: ubuntu-22.04
+    concurrency: ci-${{ github.ref }}
+    needs: cache-ci-container-image
+    steps:
+      - uses: actions/checkout@v4
+      - name: docker login
+        continue-on-error: true
+        run: (echo ${{ secrets.GITHUB_TOKEN }} | docker login ${CI_CONTAINER_REGISTRY} -u ${GITHUB_ACTOR} --password-stdin)
+      # Needed so the container has permission to create files.
+      - name: container user repository file permissions
+        run: chmod -R o+rw .
+      - name: lint
+        run: make container run="make lint"
+      - name: tests
+        run: make container run="make test"
+      - name: build
+        run: make container run="make build"

@@ -7,6 +7,12 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 WORKDIR /opt/app
 
+# Non root user details.
+ARG USER_ID=1000
+ARG USER_NAME=dev
+ARG GROUP_ID=${USER_ID}
+ARG GROUP_NAME=${USER_NAME}
+
 RUN \
   # Install tools.
   apt-get update && \
@@ -30,17 +36,21 @@ RUN \
   # Install the Golang protobuf compiler plugin.
   go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.31.0 && \
   # Install the golangci-lint linter.
-  curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
+  curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.63.4 && \
+  # Create the non root user and group.
+  groupadd --gid ${GROUP_ID} ${GROUP_NAME} && \
+  useradd --uid ${USER_ID} --gid ${GROUP_ID} --create-home ${USER_NAME} && \
+  # Make the non root user the owner of the /go folder and their contents. This is required so the non root user can download and access the Golang dependency folder contents.
+  chown -R -c ${USER_NAME} /go
+
+USER ${USER_NAME}
 
 # Development container stage, used for development locally from inside a container. See ./README.md for more details.
 FROM base AS dev-container
 
 ENV GIT_EDITOR="code --wait"
 
-ARG DEV_USER_ID=1000
-ARG DEV_USER_NAME=dev
-ARG DEV_GROUP_ID=${DEV_USER_ID}
-ARG DEV_GROUP_NAME=${DEV_USER_NAME}
+USER root
 
 ENV TINYGOROOT="/usr/local/tinygo/"
 
@@ -71,16 +81,13 @@ RUN \
   chsh -s $(which zsh) && \
   # Install Oh My Zsh (to improve the development shell experience) for the root user.
   sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" && \
-  # Create the development (non root) user and group and set its default shell to zsh.
-  groupadd --gid ${DEV_GROUP_ID} ${DEV_GROUP_NAME} && \
-  useradd --uid ${DEV_USER_ID} --gid ${DEV_GROUP_ID} --shell $(which zsh) --create-home ${DEV_USER_NAME} && \
-  # Allow the development to assume root privileges via sudo
-  adduser ${DEV_USER_NAME} sudo && \
-  echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
-  # Make the development user the owner of the /go folder and their contents. This is required so the development user can download and access the Golang dependency folder contents.
-  chown -R -c ${DEV_USER_NAME} /go
+  # Set zsh as the default shell for the non root user.
+  chsh -s $(which zsh) ${USER_NAME} && \
+  # Allow the non root user to assume root privileges via sudo.
+  adduser ${USER_NAME} sudo && \
+  echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-USER ${DEV_USER_NAME}
+USER ${USER_NAME}
 
 # Install the VS Code Golang extension dependencies.
 RUN go install github.com/cweill/gotests/gotests@v1.6.0 && \
@@ -91,7 +98,7 @@ RUN go install github.com/cweill/gotests/gotests@v1.6.0 && \
   go install honnef.co/go/tools/cmd/staticcheck@v0.4.6 && \
   go install golang.org/x/tools/gopls@v0.14.2
 
-# Install Oh My Zsh for the development user.
+# Install Oh My Zsh for the non root user.
 RUN sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
 CMD [ "bash", "-c", "echo 'Dev container started, sleeping' &&  while :; do sleep 1; done;" ]
@@ -108,4 +115,3 @@ RUN go mod download
 FROM dependency-cache AS ci
 
 COPY . .
-

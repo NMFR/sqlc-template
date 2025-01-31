@@ -3,11 +3,11 @@ package main
 import (
 	"os"
 
-	"github.com/NMFR/sqlc-template/internal/generator"
+	"github.com/NMFR/sqlc-template/internal/code"
 )
 
 func main() {
-	if err := generator.GenerateFromReader(os.Stdin, os.Stdout); err != nil {
+	if err := code.GenerateFromReader(os.Stdin, os.Stdout); err != nil {
 		panic(err)
 	}
 }
