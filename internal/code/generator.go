@@ -5,10 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"strings"
 	"text/template"
 
-	"github.com/iancoleman/strcase"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/NMFR/sqlc-template/internal/protos/plugin"
@@ -17,21 +15,6 @@ import (
 type pluginOptions struct {
 	Filename *string `json:"filename,omitempty"`
 	Template *string `json:"template,omitempty"`
-}
-
-func getTemplateFunctions() template.FuncMap {
-	return template.FuncMap{
-		"ReplaceAll": strings.ReplaceAll,
-		"ToLower":    strings.ToLower,
-		"ToUpper":    strings.ToUpper,
-
-		"ToSnake":          strcase.ToSnake,          // ("foo bar") =>	"foo_bar"
-		"ToScreamingSnake": strcase.ToScreamingSnake, // ("foo bar") => "FOO_BAR"
-		"ToKebab":          strcase.ToKebab,          // ("foo bar") =>	"foo-bar"
-		"ToScreamingKebab": strcase.ToScreamingKebab, // ("foo bar") =>	"FOO-BAR"
-		"ToCamel":          strcase.ToCamel,          // ("foo bar") =>	"FooBar"
-		"ToLowerCamel":     strcase.ToLowerCamel,     // ("foo bar") =>	"fooBar"
-	}
 }
 
 func Generate(request *plugin.GenerateRequest) (*plugin.GenerateResponse, error) {
