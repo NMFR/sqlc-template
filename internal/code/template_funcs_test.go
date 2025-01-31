@@ -35,6 +35,24 @@ func TestCodeGeneratorTemplateFuncs(t *testing.T) {
 		request  *plugin.GenerateRequest
 		expected *plugin.GenerateResponse
 	}{
+		"contains": {
+			request: createTemplateTestGenerateRequest(`
+				{{ if "foo bar foobar foo bar" | contains "barfoo" }}yes{{ else }}no{{ end }}
+				{{ if "foo bar foobar foo bar" | contains "foobar" }}yes{{ else }}no{{ end }}
+			`),
+			expected: createTemplateTestGenerateResponse(`
+				no
+				yes
+			`),
+		},
+		"trimAll": {
+			request:  createTemplateTestGenerateRequest(`{{ "||foo || bar|||" | trimAll "|" }}`),
+			expected: createTemplateTestGenerateResponse(`foo || bar`),
+		},
+		"trim": {
+			request:  createTemplateTestGenerateRequest(`{{ "     foo   bar   " | trim }}`),
+			expected: createTemplateTestGenerateResponse(`foo   bar`),
+		},
 		"ReplaceAll": {
 			request:  createTemplateTestGenerateRequest(`{{ ReplaceAll "foo bar foo bar" "bar" "foo" }}`),
 			expected: createTemplateTestGenerateResponse(`foo foo foo foo`),
@@ -46,24 +64,6 @@ func TestCodeGeneratorTemplateFuncs(t *testing.T) {
 		"ToUpper": {
 			request:  createTemplateTestGenerateRequest(`{{ "FoO bAr" | ToUpper }}`),
 			expected: createTemplateTestGenerateResponse(`FOO BAR`),
-		},
-		"Contains": {
-			request: createTemplateTestGenerateRequest(`
-				{{ if Contains "foo bar foobar foo bar" "barfoo" }}yes{{ else }}no{{ end }}
-				{{ if Contains "foo bar foobar foo bar" "foobar" }}yes{{ else }}no{{ end }}
-			`),
-			expected: createTemplateTestGenerateResponse(`
-				no
-				yes
-			`),
-		},
-		"Trim": {
-			request:  createTemplateTestGenerateRequest(`{{ Trim "||foo || bar|||" "|" }}`),
-			expected: createTemplateTestGenerateResponse(`foo || bar`),
-		},
-		"TrimSpace": {
-			request:  createTemplateTestGenerateRequest(`{{ "     foo   bar   " | TrimSpace }}`),
-			expected: createTemplateTestGenerateResponse(`foo   bar`),
 		},
 		"ToSnake": {
 			request:  createTemplateTestGenerateRequest(`{{ "foo bar" | ToSnake }}`),
