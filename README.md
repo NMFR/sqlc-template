@@ -19,8 +19,8 @@ version: "2"
 plugins:
     - name: sqlc-template
       wasm:
-          url: https://github.com/NMFR/sqlc-template/releases/download/v1.0.0/sqlc-template.wasm
-          sha256: 62b052a392a2ee631af1e54ae07e4653ba81ae296d2df62caf02c3bb4fa70be4
+          url: https://github.com/NMFR/sqlc-template/releases/download/v1.1.0/sqlc-template.wasm
+          sha256: b66ad58f7468aa1f14b4afe4b432ca405f4b64ea14e4562744e1c48adb1b3a43
 sql:
     - engine: "postgresql"
       queries: "example/database/postgresql/query.sql"
