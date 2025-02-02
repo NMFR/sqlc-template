@@ -67,6 +67,12 @@ RUN \
   apt-get clean && \
   apt-get autoremove && \
   rm -rf /var/lib/apt/lists/* && \
+  # Install sqlc, used to test the plugin locally.
+  mkdir -p /tmp/sqlc && \
+  curl -Ls https://github.com/sqlc-dev/sqlc/releases/download/v1.28.0/sqlc_1.28.0_linux_amd64.tar.gz -o /tmp/sqlc/sqlc.tar.gz && \
+  tar xzf /tmp/sqlc/sqlc.tar.gz --directory /tmp/sqlc && \
+  mv /tmp/sqlc/sqlc /usr/local/bin/sqlc && \
+  rm -Rf /tmp/sqlc && \
   # Set zsh as the default shell for the root user.
   chsh -s $(which zsh) && \
   # Install Oh My Zsh (to improve the development shell experience) for the root user.
