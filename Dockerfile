@@ -7,6 +7,8 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 WORKDIR /opt/app
 
+ENV TINYGOROOT="/usr/local/tinygo/"
+
 # Non root user details.
 ARG USER_ID=1000
 ARG USER_NAME=dev
@@ -37,6 +39,14 @@ RUN \
   go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.31.0 && \
   # Install the golangci-lint linter.
   curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.63.4 && \
+  # Install tinygo, go compiler capable of building smaller binaries.
+  mkdir -p /tmp/tinygo && \
+  curl -sL https://github.com/tinygo-org/tinygo/releases/download/v0.35.0/tinygo0.35.0.linux-amd64.tar.gz -o /tmp/tinygo/tinygo.tar.gz && \
+  tar xzf /tmp/tinygo/tinygo.tar.gz --directory /tmp/tinygo && \
+  mkdir -p /usr/local/tinygo && \
+  mv /tmp/tinygo/tinygo/* /usr/local/tinygo/ && \
+  ln -s /usr/local/tinygo/bin/tinygo /usr/local/bin/tinygo && \
+  rm -Rf /tmp/tinygo && \
   # Create the non root user and group.
   groupadd --gid ${GROUP_ID} ${GROUP_NAME} && \
   useradd --uid ${USER_ID} --gid ${GROUP_ID} --create-home ${USER_NAME} && \
