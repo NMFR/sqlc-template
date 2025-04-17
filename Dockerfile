@@ -1,5 +1,5 @@
 # Base stage, used to define the base image reference only once and to contain common tools used in other stages.
-FROM docker.io/golang:1.21.4-bookworm@sha256:85aacbed94a248f792beb89198649ddbc730649054b397f8d689e9c4c4cceab7 AS base
+FROM docker.io/golang:1.24.2-bookworm@sha256:00eccd446e023d3cd9566c25a6e6a02b90db3e1e0bbe26a48fc29cd96e800901 AS base
 
 # Fix: https://github.com/hadolint/hadolint/wiki/DL4006
 # Fix: https://github.com/koalaman/shellcheck/wiki/SC3014
@@ -36,7 +36,7 @@ RUN \
   # Install the Golang protobuf compiler plugin.
   go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.31.0 && \
   # Install the golangci-lint linter.
-  curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.63.4 && \
+  curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.1.2 && \
   # Create the non root user and group.
   groupadd --gid ${GROUP_ID} ${GROUP_NAME} && \
   useradd --uid ${USER_ID} --gid ${GROUP_ID} --create-home ${USER_NAME} && \
