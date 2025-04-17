@@ -87,12 +87,12 @@ USER ${USER_NAME}
 
 # Install the VS Code Golang extension dependencies.
 RUN go install github.com/cweill/gotests/gotests@v1.6.0 && \
-  go install github.com/fatih/gomodifytags@v1.16.0 && \
-  go install github.com/josharian/impl@v1.1.0 && \
+  go install github.com/fatih/gomodifytags@v1.17.0 && \
+  go install github.com/josharian/impl@v1.4.0 && \
   go install github.com/haya14busa/goplay/cmd/goplay@v1.0.0 && \
-  go install github.com/go-delve/delve/cmd/dlv@v1.21.2 && \
-  go install honnef.co/go/tools/cmd/staticcheck@v0.4.6 && \
-  go install golang.org/x/tools/gopls@v0.14.2
+  go install github.com/go-delve/delve/cmd/dlv@v1.24.2 && \
+  go install honnef.co/go/tools/cmd/staticcheck@v0.6.1 && \
+  go install golang.org/x/tools/gopls@v0.18.1
 
 # Install Oh My Zsh for the non root user.
 RUN sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
